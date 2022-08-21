@@ -10,6 +10,10 @@
   - traffic is encrypted (can TLS inspection mitigate this?)
   - difficult or impractical to block cloud provider traffic
 
+- red team accountability
+  - red team access via IAM roles
+  - CloudWatch for capturing red operator activity
+
 ## What does serverless C2 look like today?
 - potentially one case observed in the wild from Arista / Awake Security
 - one public tool by Rob Goyette (hackerrob) - https://github.com/hackerob/ServerlessC2
