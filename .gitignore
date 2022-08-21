@@ -22,3 +22,6 @@ go.work
 
 # compiled binaries
 release/*
+
+# VS Code
+.vscode/settings.json
