@@ -58,10 +58,18 @@ git clone https://github.com/bluesentinelsec/RedNimbusC2
 ```
 
 ### Issue taskings
+Lambda name: submitTasking
+
+Taskings are sent via HTTP POST requests to API Gateway
+
+API gateway passes to Lambda -> Lambda passes to S3; writes to a bucket - "taskings"
+
+Security here is critical - only red operators should
+be able to issue tasks
 
 ```bash
 # issue singular tasking
-./set_tasking --session-id uuid --cmd supportedCmd --args yourArguments
+./set-task --session-id uuid --cmd supportedCmd --args yourArguments
 
 # task multiple sessions
 ./set_tasking --session-id uuid1,uuid2,uuid3 --cmd supportedCmd --args yourArguments
@@ -71,9 +79,116 @@ git clone https://github.com/bluesentinelsec/RedNimbusC2
 
 # task implants in a group
 ./set_tasking --session-group yourGroup --cmd supportedCmd --args yourArguments
+
+# remove task
+./remove-task --id <task ID>
+
+# read task
+./get-task --id <task ID>
+
+# note: if 'nimbus_secret' env var is set, encrypt command with that key
+# implant will have to know about the key
+```
+
+### Supported Commands
+
+```
+# download a file from target to S3
+get-file <src file>,<dst file>
+
+# put file from S3 to target
+put-file <src file>,<dst file>
+
+# target system will download a file from a URL
+download-file <URL>,<dst file>
+
+# target system will upload a file via HTTP POST to URL
+upload-file <URL>
+
+# run command from native shell environment
+exec-cmd <command>
+
+# execute a base64 encoded command
+exec-b64cmd <base64 encoded command>
+
+# list files in directory
+list-files <file or dir>
+
+# list files recursive
+list-files-recursive <dir>
+
+# get process listing
+get-process
+
+# get implant process ID
+get-pid
+
+# get network connections
+get-netstat
+
+# get network interface configuration
+get-ifconfig
+
+# load dynamic library in process
+load-library <library in S3> <pid or proc name>
+
+# load shellcode in process
+load-shellcode <shellcode in S3> <pid or proc name>
+
+# exit from the system and delete all artifacts
+terminate-session
+
+# change secret key; this will read an env variable, 'nimbus_secret'
+set-secret
+
+# set sleep interval
+set-sleep <int>
+
+# if implant fails to connect after X times, cleanup and terminate
+set-retry-limit <int>
+```
+
+### Task structure
+
+Unencrypted:
+```
+taskID: string
+task: string
+arguments: []string
+sessionID: string
+group: string
+time: string
+```
+
+Encrypted
+```
+data: <encrypted task object>
 ```
 
 ### Get tasking output
+
+tasks should get written to an S3 bucket - `output`
+
+task output structure:
+
+```
+sessionID: string
+hostname: string
+osName: string
+osVersion: string
+kernel: string
+implantUser: string
+implantDir: string
+implantProcessID: int
+taskID: string
+taskIssued: time
+taskComplete: time
+task: string
+error: string
+output: string
+```
+
+- get psp's should be a module / plugin
 
 - task output can stream into a console window
 
