@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/akamensky/argparse"
+	"github.com/bluesentinelsec/rednimbusc2/pkg/awsProfileHandler"
 	"github.com/bluesentinelsec/rednimbusc2/pkg/tasker"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,6 +22,7 @@ var cmdFlag *string
 var argsFlag *string
 var execTimeFlag *string
 var keyEnvFlag *string
+var awsProfileFlag *string
 
 func InvokeCLI(args []string) {
 
@@ -41,6 +43,7 @@ func InvokeCLI(args []string) {
 	argsFlag = parser.String("a", "args", &argparse.Options{Required: false, Help: "TBD"})
 	execTimeFlag = parser.String("t", "time", &argparse.Options{Required: false, Help: "TBD"})
 	keyEnvFlag = parser.String("k", "key-env", &argparse.Options{Required: false, Help: "TBD"})
+	awsProfileFlag = parser.String("p", "aws-profile", &argparse.Options{Required: false, Help: "TBD"})
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -52,6 +55,11 @@ func InvokeCLI(args []string) {
 
 	// setup console logging
 	log.SetLevel(log.DebugLevel)
+
+	// set AWS profile - uses default if left blank
+	if *awsProfileFlag != "" {
+		awsProfileHandler.SetAWSProfile(*awsProfileFlag)
+	}
 
 	if setTaskCmd.Happened() {
 		log.Debug("invoke set-task")
@@ -72,6 +80,7 @@ func InvokeCLI(args []string) {
 		log.Debug("invoke remove-task")
 		invokeRemoveLambdaTask()
 	}
+
 }
 
 func configureTaskObject() *tasker.TaskObject {
