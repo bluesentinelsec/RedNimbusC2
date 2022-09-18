@@ -37,6 +37,8 @@
 ### Installation
 
 ```bash
+Users will need to download/install AWS CLI and configure it
+
 # clone the repo
 git clone https://github.com/bluesentinelsec/RedNimbusC2
 
