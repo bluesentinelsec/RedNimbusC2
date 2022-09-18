@@ -67,3 +67,6 @@ pip install -r requirements.txt
 ## Other solutions to look at
 - Terraform
 - Kubernetes
+
+# Buckets to create:
+- nimbusC2
