@@ -25,3 +25,6 @@ release/*
 
 # VS Code
 .vscode/settings.json
+
+# MacOS junk
+.DS_Store
