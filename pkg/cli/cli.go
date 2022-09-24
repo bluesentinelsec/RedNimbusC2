@@ -83,8 +83,9 @@ func InvokeCLI(args []string) {
 
 }
 
-func configureTaskObject() *tasker.TaskObject {
+func configureTaskObject(lambdaHandler string) *tasker.TaskObject {
 	taskObj := tasker.NewTask()
+	taskObj.SetLambdaHandler(lambdaHandler)
 	taskObj.SetKeyEnv(*keyEnvFlag)
 	taskObj.SetSessionID(*sessionIDFlag)
 	taskObj.SetGroupName(*groupFlag)
@@ -100,13 +101,13 @@ func configureTaskObject() *tasker.TaskObject {
 // Set Task Lambda function.
 func invokeSetLambdaTask() {
 
-	taskObj := configureTaskObject()
+	taskObj := configureTaskObject("HandleSetLambdaTask")
 	tasker.SetLambdaTask(taskObj)
 }
 
 func invokeUpdateLambdaTask() {
 
-	taskObj := configureTaskObject()
+	taskObj := configureTaskObject("invokeUpdateLambdaTask")
 	tasker.UpdateLambdaTask(taskObj)
 }
 

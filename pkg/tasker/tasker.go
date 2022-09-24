@@ -25,6 +25,10 @@ type TaskObject struct {
 	// that should receive and execute the task.
 	SessionID string `json:"sessionID"`
 
+	// LambdaHandler determines which Lambda C2 function/
+	// processes the task request
+	LambdaHandler string `json:"lambdaHandler"`
+
 	// groupName is a label for implant sessions;
 	// sessions with the matching group name will
 	// receive and execute the task.
@@ -49,7 +53,8 @@ type TaskObject struct {
 }
 
 var secretKey string
-var lambdaPayloadFile *os.File
+
+//var lambdaPayloadFile *os.File
 
 // NewTask generates a new task object
 // with a unique task ID. This function
@@ -64,16 +69,23 @@ func NewTask() *TaskObject {
 func SetLambdaTask(taskObj *TaskObject) {
 
 	log.Debug("tasker.SetLambdaTask")
-	taskJSON := convertToJSON(taskObj)
-	writeLambdaPayload(taskJSON)
-
-	// write task object to disk as temporary file
-	// invoke an AWS CLI command, passing the task file
-	// as a payload to set task lambda
 
 	// read environment variable and encrypt
 	// task plus arguments if needed
 	log.Debug(secretKey)
+
+	// convert the task object to JSON for use by Lambda
+	taskJSON := convertToJSON(taskObj)
+
+	// write task JSON to disk as temporary file
+	fileWritten := writeLambdaPayload(taskJSON)
+
+	// cleanup task file when finished
+	defer os.Remove(fileWritten)
+
+	// write task object to disk as temporary file
+	// invoke an AWS CLI command, passing the task file
+	// as a payload to set task lambda
 }
 
 func UpdateLambdaTask(taskObj *TaskObject) {
@@ -148,16 +160,25 @@ func (taskObj *TaskObject) GetArguments() []string {
 	return taskObj.Arguments
 }
 
+func (taskObj *TaskObject) SetLambdaHandler(handler string) {
+	taskObj.LambdaHandler = handler
+}
+
+func (taskObj *TaskObject) GetLambdaHandler() string {
+	return taskObj.LambdaHandler
+}
+
 func (taskObj *TaskObject) SetKeyEnv(envVarName string) {
 	secretKey = os.Getenv(envVarName)
 }
 
-func writeLambdaPayload(payloadJSON []byte) {
+func writeLambdaPayload(payloadJSON []byte) string {
 
 	log.Debug("tasker.writeLambdaPayload")
 
 	// create a temporary file
-	lambdaPayloadFile, err := ioutil.TempFile("", "nimbusC2")
+	localTmp := os.TempDir()
+	lambdaPayloadFile, err := ioutil.TempFile(localTmp, "nimbusC2")
 	if err != nil {
 		log.Fatal("tasker.writeLambdaPayload ", err)
 	}
@@ -171,6 +192,7 @@ func writeLambdaPayload(payloadJSON []byte) {
 	}
 
 	// caller will delete the temp file when finished
+	return lambdaPayloadFile.Name()
 }
 
 func convertToJSON(task *TaskObject) []byte {

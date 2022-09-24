@@ -26,7 +26,7 @@ func TestHandleGetLambdaTask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(string(taskData))
+	t.Log(taskData)
 }
 
 func TestHandleRemoveLambdaTask(t *testing.T) {

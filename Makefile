@@ -9,6 +9,17 @@ redOperator:
 lambdaC2:
 	go build -o release/redNimbusC2-lambda -ldflags="-s -w" cmd/lambdaC2/main.go
 
+deployment-package:
+	GOOS=linux GOARCH=arm64 go build -o bootstrap -ldflags="-s -w" cmd/lambdaC2/main.go
+	zip bootstrap.zip bootstrap
+
+cdk-deploy: deployment-package
+	./scripts/deploy.sh 
+	
+
+cdk-destroy:
+	./scripts/init_cdk_env.sh && cdk destroy --all --require-approval never
+
 test:
 	go test ./pkg/shellexec/
 	go test ./pkg/cli
@@ -18,3 +29,6 @@ test:
 # expenses under my AWS account
 test-aws:
 	go test ./...
+
+clean:
+	rm bootstrap bootstrap.zip
