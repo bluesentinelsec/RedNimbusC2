@@ -2,10 +2,12 @@ package tasker
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 
+	"github.com/bluesentinelsec/rednimbusc2/pkg/shellexec"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -83,9 +85,14 @@ func SetLambdaTask(taskObj *TaskObject) {
 	// cleanup task file when finished
 	defer os.Remove(fileWritten)
 
-	// write task object to disk as temporary file
 	// invoke an AWS CLI command, passing the task file
 	// as a payload to set task lambda
+	outFile := "/tmp/outfile"
+	cmd := fmt.Sprintf("aws lambda invoke --function-name nimbusC2Handler --invocation-type Event --payload file://%v --cli-binary-format raw-in-base64-out %v", fileWritten, outFile)
+	err := shellexec.ExecShellCmd(cmd)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func UpdateLambdaTask(taskObj *TaskObject) {

@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"reflect"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	lambdac2 "github.com/bluesentinelsec/rednimbusc2/pkg/lambdaC2"
@@ -17,7 +15,8 @@ func HandleRequest(ctx context.Context, taskObj tasker.TaskObject) (lambdac2.Lam
 
 	// display the task object so we can see
 	// if we submitted a well formed task
-	displayTask(taskObj)
+	//displayTask(taskObj)
+	log.Info(taskObj)
 
 	// pass task object to the task handler for processing
 	returnObj, err := lambdac2.RouteTaskToHandler(&taskObj)
@@ -33,6 +32,7 @@ func main() {
 	lambda.Start(HandleRequest)
 }
 
+/*
 func displayTask(taskObj tasker.TaskObject) {
 	taskReflect := reflect.ValueOf(taskObj)
 	typeOfS := taskReflect.Type()
@@ -40,3 +40,4 @@ func displayTask(taskObj tasker.TaskObject) {
 		fmt.Printf("%v: %v\n", typeOfS.Field(i).Name, taskReflect.Field(i).Interface())
 	}
 }
+*/

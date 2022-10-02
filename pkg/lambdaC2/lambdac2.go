@@ -23,7 +23,7 @@ type LambdaReturnObject struct {
 	Value      []byte
 }
 
-var bucket string = "nimbusC2"
+var bucket string = "nimbusc2-red-operator"
 var tasksKey string = "tasks/"
 var tmp string = "/tmp/"
 
