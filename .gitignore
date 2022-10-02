@@ -28,3 +28,7 @@ release/*
 
 # MacOS junk
 .DS_Store
+
+# build files
+bootstrap.zip
+bootstrap
