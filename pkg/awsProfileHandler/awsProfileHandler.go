@@ -1,6 +1,13 @@
 package awsProfileHandler
 
-import "os"
+import (
+	"context"
+	"os"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+)
 
 // SetAWSProfile specifies the AWS profile to use.
 // By default, the AWS SDK checks the AWS_PROFILE environment variable
@@ -11,4 +18,31 @@ import "os"
 func SetAWSProfile(profile string) error {
 	err := os.Setenv("AWS_PROFILE", profile)
 	return err
+}
+
+// GetAWSRegion returns the default region
+// for the current AWS profile
+func GetAWSRegion() (string, error) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return "", err
+	}
+	return cfg.Region, err
+}
+
+// GetAWSRegion returns the account ID
+// for the current AWS profile
+func GetAWSAccountID() (string, error) {
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return "", err
+	}
+	client := sts.NewFromConfig(cfg)
+	identity, err := client.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
+	if err != nil {
+		return "", err
+	}
+	return aws.ToString(identity.Account), err
 }

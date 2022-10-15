@@ -18,7 +18,7 @@ cdk-deploy: deployment-package
 	
 
 cdk-destroy:
-	./scripts/init_cdk_env.sh && cdk destroy --all --require-approval never
+	./scripts/destroy.sh
 
 test:
 	go test ./pkg/shellexec/

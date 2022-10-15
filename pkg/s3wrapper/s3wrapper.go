@@ -193,3 +193,4 @@ func RemoveBucket(bucket string) error {
 
 	return nil
 }
+
