@@ -9,7 +9,7 @@ Content is not expected to be stable or even usable at this time.
 
 ## Overview
 
-[](./images/nimbusC2_architecture.png)
+![alt text](images/nimbusC2_architecture.png)
 
 ## Installation
 
