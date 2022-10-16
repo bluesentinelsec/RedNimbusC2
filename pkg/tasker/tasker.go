@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bluesentinelsec/rednimbusc2/pkg/awsProfileHandler"
 	"github.com/bluesentinelsec/rednimbusc2/pkg/shellexec"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -43,7 +44,7 @@ type TaskObject struct {
 	ExecTime string `json:"execTime"`
 
 	// Task specifies a supported task to run.
-	// For a list of supported tasks, see TBD.
+	// For a list of supported tasks, see <TBD>.
 	Task string `json:"task"`
 
 	// Arguments holds settings needed for
@@ -54,6 +55,7 @@ type TaskObject struct {
 	Arguments []string `json:"arguments"`
 }
 
+// used for encrypting/decrypting tasks and output
 var secretKey string
 
 //var lambdaPayloadFile *os.File
@@ -68,7 +70,7 @@ func NewTask() *TaskObject {
 	return &taskObj
 }
 
-func SetLambdaTask(taskObj *TaskObject) {
+func SetLambdaTask(taskObj *TaskObject) error {
 
 	log.Debug("tasker.SetLambdaTask")
 
@@ -83,16 +85,17 @@ func SetLambdaTask(taskObj *TaskObject) {
 	fileWritten := writeLambdaPayload(taskJSON)
 
 	// cleanup task file when finished
-	defer os.Remove(fileWritten)
+	//defer os.Remove(fileWritten)
 
 	// invoke an AWS CLI command, passing the task file
 	// as a payload to set task lambda
 	outFile := "/tmp/outfile"
-	cmd := fmt.Sprintf("aws lambda invoke --function-name nimbusC2Handler --invocation-type Event --payload file://%v --cli-binary-format raw-in-base64-out %v", fileWritten, outFile)
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type Event --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
 	err := shellexec.ExecShellCmd(cmd)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 func UpdateLambdaTask(taskObj *TaskObject) {

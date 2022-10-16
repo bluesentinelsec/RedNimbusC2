@@ -11,5 +11,8 @@ func TestSetLambdaTask(t *testing.T) {
 	taskObj.SetExecTime("test")
 	taskObj.SetImplantTask("get-process")
 	taskObj.SetArguments("nothing")
-	SetLambdaTask(taskObj)
+	err := SetLambdaTask(taskObj)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

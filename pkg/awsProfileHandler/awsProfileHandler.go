@@ -2,6 +2,7 @@ package awsProfileHandler
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -18,6 +19,15 @@ import (
 func SetAWSProfile(profile string) error {
 	err := os.Setenv("AWS_PROFILE", profile)
 	return err
+}
+
+// returns the current AWS profile based on environment variable
+func GetAWSProfile() string {
+	profile := os.Getenv("AWS_PROFILE")
+	if len(profile) <= 0 {
+		return "default"
+	}
+	return profile
 }
 
 // GetAWSRegion returns the default region
@@ -45,4 +55,30 @@ func GetAWSAccountID() (string, error) {
 		return "", err
 	}
 	return aws.ToString(identity.Account), err
+}
+
+func GetNimbusBucketName() (string, error) {
+	accountID, err := GetAWSAccountID()
+	if err != nil {
+		return "", err
+	}
+	region, err := GetAWSRegion()
+	if err != nil {
+		return "", err
+	}
+	bucketName := fmt.Sprintf("red-nimbus-c2-%v-%v", region, accountID)
+	return bucketName, err
+}
+
+func GetTestBucketName() (string, error) {
+	accountID, err := GetAWSAccountID()
+	if err != nil {
+		return "", err
+	}
+	region, err := GetAWSRegion()
+	if err != nil {
+		return "", err
+	}
+	bucketName := fmt.Sprintf("red-nimbus-c2-testing-%v-%v", region, accountID)
+	return bucketName, err
 }

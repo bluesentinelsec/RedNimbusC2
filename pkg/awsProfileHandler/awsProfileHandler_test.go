@@ -8,6 +8,11 @@ func TestSetAWSProfile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	got := GetAWSProfile()
+	if got != "default" {
+		t.Fatalf("expected AWS_PROFILE to 'default', but received '%v'", got)
+	}
 }
 
 func TestGetAWSRegion(t *testing.T) {
@@ -30,4 +35,28 @@ func TestGetAWSAccountID(t *testing.T) {
 		t.Fatal("got account ID without any data")
 	}
 	t.Log("got account ID: ", accountID)
+}
+
+func TestGetNimbusBucketName(t *testing.T) {
+	bucketName, err := GetNimbusBucketName()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(bucketName) <= 0 {
+		t.Fatal("got bucket name without any data")
+	}
+	t.Log("got bucket name: ", bucketName)
+}
+
+func TestGetTestBucketName(t *testing.T) {
+	bucketName, err := GetTestBucketName()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(bucketName) <= 0 {
+		t.Fatal("got bucket name without any data")
+	}
+	t.Log("got bucket name: ", bucketName)
 }

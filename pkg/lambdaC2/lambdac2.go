@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/bluesentinelsec/rednimbusc2/pkg/awsProfileHandler"
 	"github.com/bluesentinelsec/rednimbusc2/pkg/s3wrapper"
 	"github.com/bluesentinelsec/rednimbusc2/pkg/tasker"
 	log "github.com/sirupsen/logrus"
@@ -23,7 +24,6 @@ type LambdaReturnObject struct {
 	Value      []byte
 }
 
-var bucket string = "nimbusc2-red-operator"
 var tasksKey string = "tasks/"
 var tmp string = "/tmp/"
 
@@ -69,8 +69,12 @@ func HandleSetLambdaTask(taskObj *tasker.TaskObject) error {
 	}
 
 	key := tasksKey + taskObj.TaskID
-	log.Debugf("writing task to s3://%v/%v", bucket, key)
-	err = s3wrapper.PutFile(taskFile, bucket, key)
+	bucketName, err := awsProfileHandler.GetNimbusBucketName()
+	if err != nil {
+		return err
+	}
+	log.Debugf("writing task to s3://%v/%v", bucketName, key)
+	err = s3wrapper.PutFile(taskFile, bucketName, key)
 	if err != nil {
 		return err
 	}
@@ -91,8 +95,12 @@ func HandleGetLambdaTask(taskObj *tasker.TaskObject) (LambdaReturnObject, error)
 
 	key := tasksKey + taskObj.TaskID
 	outFile := tmp + taskObj.TaskID
-	log.Debugf("downloading file s3://%v/%v", bucket, key)
-	err := s3wrapper.GetFile(bucket, key, outFile)
+	bucketName, err := awsProfileHandler.GetNimbusBucketName()
+	if err != nil {
+		return retObj, err
+	}
+	log.Debugf("downloading file s3://%v/%v", bucketName, key)
+	err = s3wrapper.GetFile(bucketName, key, outFile)
 	if err != nil {
 		return retObj, err
 	}
@@ -119,8 +127,12 @@ func HandleRemoveLambdaTask(taskObj *tasker.TaskObject) error {
 
 	log.Info("deleting task: ", taskObj.TaskID)
 
+	bucketName, err := awsProfileHandler.GetNimbusBucketName()
+	if err != nil {
+		return err
+	}
 	key := tasksKey + taskObj.TaskID
-	err := s3wrapper.RemoveFile(bucket, key)
+	err = s3wrapper.RemoveFile(bucketName, key)
 	if err != nil {
 		return err
 	}
