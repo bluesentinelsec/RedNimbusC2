@@ -1,23 +1,34 @@
-all: implant redOperator lambdaC2
+AWS_PROFILE = ""
 
-implant:
-	go build -o release/redNimbusC2-implant -ldflags="-s -w" cmd/implant/main.go
+all: operator create-agent deployment-package cdk-deploy
 
-redOperator:
-	go build -o release/redNimbusC2-operator -ldflags="-s -w" cmd/redOperator/main.go
+# build the nimbusc2 operator client
+operator:
+	go build -o release/nimbusc2 -ldflags="-s -w" cmd/redOperator/main.go
 
-lambdaC2:
-	go build -o release/redNimbusC2-lambda -ldflags="-s -w" cmd/lambdaC2/main.go
+# build app that creates nimbusc2 agent executables
+create-agent:
+	go build -o release/nimbusc2-create-agent -ldflags="-s -w" cmd/createAgent/main.go
 
+# build the AWS Lambda deployment package
 deployment-package:
 	GOOS=linux GOARCH=arm64 go build -o bootstrap -ldflags="-s -w" cmd/lambdaC2/main.go
 	zip bootstrap.zip bootstrap
 
+# deploy the AWS CDK app
 cdk-deploy: deployment-package
-	./scripts/deploy.sh 
-	
+	./scripts/deploy.sh $$AWS_PROFILE
 
-cdk-destroy:
+# installs the nimbusc2 operator client
+install:
+	install release/nimbusc2 /usr/local/bin/
+	install release/nimbusc2-create-agent /usr/local/bin/
+
+# removes the nimbusc2 operator client 
+# and destroys the CDK app
+uninstall:
+	rm -f /usr/local/bin/nimbusc2
+	rm -f /usr/local/bin/nimbusc2-create-agent
 	./scripts/destroy.sh
 
 test:
@@ -29,6 +40,3 @@ test:
 # expenses under my AWS account
 test-aws:
 	go test ./...
-
-clean:
-	rm bootstrap bootstrap.zip

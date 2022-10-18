@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh -x
 
 cd nimbus_cdk
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-cdk destroy --all --force
+cdk destroy --all --force $1

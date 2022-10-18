@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh -x
 
 cd nimbus_cdk
 python3 -m venv .venv
@@ -7,4 +7,4 @@ pip install -r requirements.txt
 
 cdk bootstrap 
 cdk synth 
-cdk deploy --all --require-approval never
+cdk deploy --all --require-approval never $1
