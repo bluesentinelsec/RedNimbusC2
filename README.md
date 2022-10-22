@@ -58,21 +58,21 @@ After installing the needed build depdencies, you can install/deploy Red Nimbus 
 
 ```bash
 git clone https://github.com/bluesentinelsec/RedNimbusC2.git
-
-# enter the RedNimbusC2 directory
-cd RedNimbusC2
 ```
 
 2. **Build Red Nimbus C2 binaries and deploy infrastructure to AWS using [CDK](https://aws.amazon.com/cdk/)**
 
 ```bash
+# enter the RedNimbusC2 directory
+cd RedNimbusC2
+
 make
 ```
 
 *Note: you can optionally deploy to a specific AWS account like so:*
 
 ```
-make my_work_account
+make <your_aws_profile>
 ```
 
 See [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for info on configuring AWS CLI profiles.
