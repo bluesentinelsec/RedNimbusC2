@@ -26,24 +26,29 @@ var awsProfileFlag *string
 
 func InvokeCLI(args []string) {
 
-	parser = argparse.NewParser(args[0], "TBD")
+	parser = argparse.NewParser(args[0], "A client for interacting with Red Nimbus C2 services")
 
 	// top level commands - red operators will invoke
 	// these commands to control implant behavior
-	setTaskCmd := parser.NewCommand("set-task", "TBD")
-	getTaskCmd := parser.NewCommand("get-task", "TBD")
-	updateTaskCmd := parser.NewCommand("update-task", "TBD")
-	removeTaskCmd := parser.NewCommand("remove-task", "TBD")
+	setTaskCmd := parser.NewCommand("set-task", "Issue a task to an agent")
+	getTaskCmd := parser.NewCommand("get-task", "Read a pending agent task")
+	updateTaskCmd := parser.NewCommand("update-task", "Update a pending agent task")
+	removeTaskCmd := parser.NewCommand("remove-task", "Delete a pending agent task")
+	getSessionCmd := parser.NewCommand("get-session", "Get detailed info about the session")
+	listSessionsCmd := parser.NewCommand("list-sessions", "Get summarized info about all existing sessions")
+	removeSessionCmd := parser.NewCommand("remove-session", "Terminate session")
+	terminateSessionsCmd := parser.NewCommand("terminate-sessions", "Terminate all existing sessions")
 
 	// arguments that modify command behavior
-	sessionIDFlag = parser.String("s", "session-id", &argparse.Options{Required: false, Help: "TBD"})
-	groupFlag = parser.String("g", "session-group", &argparse.Options{Required: false, Help: "TBD"})
-	taskIDFlag = parser.String("i", "task-id", &argparse.Options{Required: false, Help: "TBD"})
-	cmdFlag = parser.String("c", "cmd", &argparse.Options{Required: false, Help: "TBD"})
-	argsFlag = parser.String("a", "args", &argparse.Options{Required: false, Help: "TBD"})
-	execTimeFlag = parser.String("t", "time", &argparse.Options{Required: false, Help: "TBD"})
-	keyEnvFlag = parser.String("k", "key-env", &argparse.Options{Required: false, Help: "TBD"})
-	awsProfileFlag = parser.String("p", "aws-profile", &argparse.Options{Required: false, Help: "TBD"})
+	sessionIDFlag = parser.String("s", "session-id", &argparse.Options{Required: false, Help: "The agent session you wish to task"})
+	groupFlag = parser.String("g", "session-group", &argparse.Options{Required: false, Help: "The agent group you wish to task"})
+	taskIDFlag = parser.String("i", "task-id", &argparse.Options{Required: false, Help: "The task ID you wish to read/update/delete"})
+	cmdFlag = parser.String("c", "cmd", &argparse.Options{Required: false, Help: "The command the agent(s) will execute"})
+	argsFlag = parser.String("a", "args", &argparse.Options{Required: false, Help: "Command arguments"})
+	execTimeFlag = parser.String("t", "time", &argparse.Options{Required: false, Help: "The Unix epoch time which agents should execute the task (based on the agent's time zone)"})
+	keyEnvFlag = parser.String("k", "key-env", &argparse.Options{Required: false, Help: "Use the provided environment variable as a password to encrypt sensitive task details"})
+	awsProfileFlag = parser.String("p", "aws-profile", &argparse.Options{Required: false, Help: "The AWS profile to utilize for interacting with AWS services"})
+	enableVerboseCmd := parser.Flag("v", "verbose", &argparse.Options{Required: false, Help: "Enable verbose console logging"})
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -54,7 +59,9 @@ func InvokeCLI(args []string) {
 	}
 
 	// setup console logging
-	log.SetLevel(log.DebugLevel)
+	if *enableVerboseCmd {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	// set AWS profile - uses default if left blank
 	if *awsProfileFlag != "" {
@@ -63,22 +70,45 @@ func InvokeCLI(args []string) {
 
 	if setTaskCmd.Happened() {
 		log.Debug("invoke set-task")
+		// ToDo - confirm task is a valid session
 		invokeSetLambdaTask()
+		return
 	}
 
 	if getTaskCmd.Happened() {
 		log.Debug("invoke get-task")
 		invokeGetLambdaTask()
+		return
 	}
 
 	if updateTaskCmd.Happened() {
 		log.Debug("invoke update-task")
 		invokeUpdateLambdaTask()
+		return
 	}
 
 	if removeTaskCmd.Happened() {
 		log.Debug("invoke remove-task")
 		invokeRemoveLambdaTask()
+		return
+	}
+
+	if getSessionCmd.Happened() {
+		log.Debug("invoke remove-task")
+		invokeRemoveLambdaTask()
+		return
+	}
+
+	if listSessionsCmd.Happened() {
+		log.Fatal("sorry, not implemented")
+	}
+
+	if removeSessionCmd.Happened() {
+		log.Fatal("sorry, not implemented")
+	}
+
+	if terminateSessionsCmd.Happened() {
+		log.Fatal("sorry, not implemented")
 	}
 
 }
@@ -113,26 +143,36 @@ func invokeUpdateLambdaTask() {
 
 func invokeRemoveLambdaTask() {
 
+	taskObj := configureTaskObject("HandleGetLambdaTask")
 	if *taskIDFlag != "" {
-		tasker.RemoveLambdaTaskWithID(*taskIDFlag)
+		tasker.RemoveLambdaTaskWithID(taskObj)
 
 	} else if *groupFlag != "" {
-		tasker.RemoveLambdaTaskWithGroup(*groupFlag)
+		tasker.RemoveLambdaTaskWithGroup(taskObj)
 
 	} else {
-		tasker.RemoveLambdaTaskAll()
+		tasker.RemoveLambdaTaskAll(taskObj)
 	}
 }
 
 func invokeGetLambdaTask() {
 
+	log.Debug("invokeGetLambdaTask")
+
 	if *taskIDFlag != "" {
-		tasker.GetLambdaTaskFromID(*taskIDFlag)
+		taskObj := configureTaskObject("HandleGetLambdaTaskFromID")
+		// set the ID to the task-id we want to read
+		taskObj.SetTaskID(*taskIDFlag)
+		tasker.GetLambdaTaskFromID(taskObj)
 
 	} else if *groupFlag != "" {
-		tasker.GetLambdaTaskFromGroup(*groupFlag)
+		taskObj := configureTaskObject("HandleGetLambdaTaskFromGroup")
+		taskObj.SetGroupName(*groupFlag)
+		tasker.GetLambdaTaskFromGroup(taskObj)
 
 	} else {
-		tasker.GetLambdaTaskAll()
+		taskObj := configureTaskObject("HandleGetLambdaTaskAll")
+		taskObj.SetTaskID("all")
+		tasker.GetLambdaTaskAll(taskObj)
 	}
 }

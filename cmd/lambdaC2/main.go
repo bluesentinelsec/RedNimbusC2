@@ -11,6 +11,7 @@ import (
 
 func HandleRequest(ctx context.Context, taskObj tasker.TaskObject) (lambdac2.LambdaReturnObject, error) {
 
+	log.SetLevel(log.DebugLevel)
 	log.Info("received nimbusC2 request")
 
 	// display the task object so we can see

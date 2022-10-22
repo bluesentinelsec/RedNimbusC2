@@ -8,8 +8,10 @@ import (
 )
 
 func ExecShellCmd(shellCmd string) error {
-	log.Info("executing command: ", shellCmd)
+	log.Debug("executing command: \n", shellCmd)
+
 	cmd := exec.Command("sh", "-c", shellCmd)
+
 	stdoutStderr, err := cmd.CombinedOutput()
 	if err != nil {
 		return err

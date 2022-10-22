@@ -13,7 +13,7 @@ func TestHandleSetLambdaTask(t *testing.T) {
 	task := tasker.NewTask()
 	task.TaskID = taskIDforTesting
 	task.SetImplantTask("get-pid")
-	err := HandleSetLambdaTask(task)
+	_, err := HandleSetLambdaTask(task)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestHandleRemoveLambdaTask(t *testing.T) {
 
 	task := tasker.NewTask()
 	task.TaskID = taskIDforTesting
-	err := HandleRemoveLambdaTask(task)
+	_, err := HandleRemoveLambdaTask(task)
 	if err != nil {
 		t.Fatal(err)
 	}

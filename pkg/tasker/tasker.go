@@ -10,6 +10,7 @@ import (
 	"github.com/bluesentinelsec/rednimbusc2/pkg/awsProfileHandler"
 	"github.com/bluesentinelsec/rednimbusc2/pkg/shellexec"
 	"github.com/google/uuid"
+	"github.com/jedib0t/go-pretty/v6/table"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -55,6 +56,12 @@ type TaskObject struct {
 	Arguments []string `json:"arguments"`
 }
 
+type LambdaResponse struct {
+	ReturnType string `json:"returnType"`
+	Length     int    `json:"length"`
+	Value      []byte `json:"value"`
+}
+
 // used for encrypting/decrypting tasks and output
 var secretKey string
 
@@ -89,12 +96,15 @@ func SetLambdaTask(taskObj *TaskObject) error {
 
 	// invoke an AWS CLI command, passing the task file
 	// as a payload to set task lambda
-	outFile := "/tmp/outfile"
-	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type Event --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
+	outFile := os.TempDir() + "output.json"
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
 	err := shellexec.ExecShellCmd(cmd)
 	if err != nil {
 		return err
 	}
+
+	log.Info("Registered task with following settings:")
+	printLambdaResponse(outFile)
 	return nil
 }
 
@@ -108,13 +118,107 @@ func UpdateLambdaTask(taskObj *TaskObject) {
 	log.Debug(secretKey)
 }
 
-func GetLambdaTaskFromID(id string)       {}
-func GetLambdaTaskFromGroup(group string) {}
-func GetLambdaTaskAll()                   {}
+func GetLambdaTaskFromID(taskObj *TaskObject) error {
+	log.Debug("tasker.GetLambdaTaskFromID")
 
-func RemoveLambdaTaskWithID(id string)       {}
-func RemoveLambdaTaskWithGroup(group string) {}
-func RemoveLambdaTaskAll()                   {}
+	// read environment variable and encrypt
+	// task plus arguments if needed
+	log.Debug(secretKey)
+
+	// convert the task object to JSON for use by Lambda
+	taskJSON := convertToJSON(taskObj)
+
+	// write task JSON to disk as temporary file
+	fileWritten := writeLambdaPayload(taskJSON)
+
+	// cleanup task file when finished
+	//defer os.Remove(fileWritten)
+
+	// invoke an AWS CLI command, passing the task file
+	// as a payload to set task lambda
+	outFile := os.TempDir() + "output.json"
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
+	log.Debug(cmd)
+	err := shellexec.ExecShellCmd(cmd)
+	if err != nil {
+		return err
+	}
+	log.Info("Received task with following settings:")
+	printLambdaResponse(outFile)
+	return nil
+}
+func GetLambdaTaskFromGroup(taskObj *TaskObject) error {
+	log.Debug("tasker.GetLambdaTaskFromID")
+
+	// read environment variable and encrypt
+	// task plus arguments if needed
+	log.Debug(secretKey)
+
+	// convert the task object to JSON for use by Lambda
+	taskJSON := convertToJSON(taskObj)
+
+	// write task JSON to disk as temporary file
+	fileWritten := writeLambdaPayload(taskJSON)
+
+	// cleanup task file when finished
+	//defer os.Remove(fileWritten)
+
+	// invoke an AWS CLI command, passing the task file
+	// as a payload to set task lambda
+	outFile := os.TempDir() + "output.json"
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
+	log.Debug(cmd)
+	err := shellexec.ExecShellCmd(cmd)
+	if err != nil {
+		return err
+	}
+	log.Info("Received task with following settings:")
+	printLambdaResponse(outFile)
+	return nil
+
+}
+func GetLambdaTaskAll(taskObj *TaskObject) error {
+	log.Debug("tasker.GetLambdaTaskFromID")
+
+	// read environment variable and encrypt
+	// task plus arguments if needed
+	log.Debug(secretKey)
+
+	// convert the task object to JSON for use by Lambda
+	taskJSON := convertToJSON(taskObj)
+
+	// write task JSON to disk as temporary file
+	fileWritten := writeLambdaPayload(taskJSON)
+
+	// cleanup task file when finished
+	//defer os.Remove(fileWritten)
+
+	// invoke an AWS CLI command, passing the task file
+	// as a payload to set task lambda
+	outFile := os.TempDir() + "output.json"
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
+	log.Debug(cmd)
+	err := shellexec.ExecShellCmd(cmd)
+	if err != nil {
+		return err
+	}
+	log.Info("Received task with following settings:")
+	printLambdaResponse(outFile)
+	return nil
+
+}
+
+func RemoveLambdaTaskWithID(taskObj *TaskObject) error {
+	log.Info("Successfully deleted task: ")
+	return nil
+}
+
+func RemoveLambdaTaskWithGroup(taskObj *TaskObject) error {
+	return nil
+}
+func RemoveLambdaTaskAll(taskObj *TaskObject) error {
+	return nil
+}
 
 //-----------------------------------
 // TaskObject setters and getters.
@@ -126,8 +230,13 @@ func (taskObj *TaskObject) createTaskID() {
 	taskObj.TaskID = uuid.NewString()
 }
 
-func (taskObj *TaskObject) getTaskID() string {
+func (taskObj *TaskObject) GetTaskID() string {
 	return taskObj.TaskID
+}
+
+func (taskObj *TaskObject) SetTaskID(id string) {
+	log.Debug("setting task id as: ", id)
+	taskObj.TaskID = id
 }
 
 func (taskObj *TaskObject) SetSessionID(id string) {
@@ -214,4 +323,52 @@ func convertToJSON(task *TaskObject) []byte {
 	}
 
 	return taskJSON
+}
+
+// printLambdaResponse displays/decodes
+// the Lambda function response
+func printLambdaResponse(filename string) {
+
+	// read the file containing Lambda output
+	rawOutput, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// decode the Lambda file output into struct
+	formattedOutput := LambdaResponse{}
+	err = json.Unmarshal(rawOutput, &formattedOutput)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// clean up Lambda output.value
+	trimmedSpace := strings.TrimSpace(string(formattedOutput.Value))
+	trimedQuotes := strings.Trim(trimmedSpace, "\"")
+
+	// decode Lambda output.value into a struct
+	decodedTaskObj := TaskObject{}
+	err = json.Unmarshal([]byte(trimedQuotes), &decodedTaskObj)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// display Lambda output as table
+	// ToDo - handle encrypted tasks
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Type", "Value"})
+	t.AppendRow(table.Row{"Task ID:", decodedTaskObj.TaskID})
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"Session ID:", decodedTaskObj.SessionID})
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"Group:", decodedTaskObj.GroupName})
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"Exec Time:", decodedTaskObj.ExecTime})
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"Task:", decodedTaskObj.Task})
+	t.AppendSeparator()
+	t.AppendRow(table.Row{"Arguments:", decodedTaskObj.Arguments})
+	t.AppendSeparator()
+	t.Render()
 }
