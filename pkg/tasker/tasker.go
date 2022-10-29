@@ -77,10 +77,10 @@ func NewTask() *TaskObject {
 	return &taskObj
 }
 
-func SetLambdaTask(taskObj *TaskObject) error {
-
-	log.Debug("tasker.SetLambdaTask")
-
+// InvokeLambdaFunction invokes the Nimbus C2
+// lambda function, passing it the task object
+// in JSON format
+func InvokeLambdaFunction(taskObj *TaskObject) (string, error) {
 	// read environment variable and encrypt
 	// task plus arguments if needed
 	log.Debug(secretKey)
@@ -97,127 +97,13 @@ func SetLambdaTask(taskObj *TaskObject) error {
 	// invoke an AWS CLI command, passing the task file
 	// as a payload to set task lambda
 	outFile := os.TempDir() + "output.json"
-	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
+	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --no-paginate --payload file://%v --output json --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
 	err := shellexec.ExecShellCmd(cmd)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	log.Info("Registered task with following settings:")
-	printLambdaResponse(outFile)
-	return nil
-}
-
-func UpdateLambdaTask(taskObj *TaskObject) {
-	// write task to disk as temporary file
-	// invoke via AWS CLI command
-	// send updated task to update lambda
-
-	// read environment variable and encrypt
-	// task plus arguments if needed
-	log.Debug(secretKey)
-}
-
-func GetLambdaTaskFromID(taskObj *TaskObject) error {
-	log.Debug("tasker.GetLambdaTaskFromID")
-
-	// read environment variable and encrypt
-	// task plus arguments if needed
-	log.Debug(secretKey)
-
-	// convert the task object to JSON for use by Lambda
-	taskJSON := convertToJSON(taskObj)
-
-	// write task JSON to disk as temporary file
-	fileWritten := writeLambdaPayload(taskJSON)
-
-	// cleanup task file when finished
-	//defer os.Remove(fileWritten)
-
-	// invoke an AWS CLI command, passing the task file
-	// as a payload to set task lambda
-	outFile := os.TempDir() + "output.json"
-	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
-	log.Debug(cmd)
-	err := shellexec.ExecShellCmd(cmd)
-	if err != nil {
-		return err
-	}
-	log.Info("Received task with following settings:")
-	printLambdaResponse(outFile)
-	return nil
-}
-func GetLambdaTaskFromGroup(taskObj *TaskObject) error {
-	log.Debug("tasker.GetLambdaTaskFromID")
-
-	// read environment variable and encrypt
-	// task plus arguments if needed
-	log.Debug(secretKey)
-
-	// convert the task object to JSON for use by Lambda
-	taskJSON := convertToJSON(taskObj)
-
-	// write task JSON to disk as temporary file
-	fileWritten := writeLambdaPayload(taskJSON)
-
-	// cleanup task file when finished
-	//defer os.Remove(fileWritten)
-
-	// invoke an AWS CLI command, passing the task file
-	// as a payload to set task lambda
-	outFile := os.TempDir() + "output.json"
-	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
-	log.Debug(cmd)
-	err := shellexec.ExecShellCmd(cmd)
-	if err != nil {
-		return err
-	}
-	log.Info("Received task with following settings:")
-	printLambdaResponse(outFile)
-	return nil
-
-}
-func GetLambdaTaskAll(taskObj *TaskObject) error {
-	log.Debug("tasker.GetLambdaTaskFromID")
-
-	// read environment variable and encrypt
-	// task plus arguments if needed
-	log.Debug(secretKey)
-
-	// convert the task object to JSON for use by Lambda
-	taskJSON := convertToJSON(taskObj)
-
-	// write task JSON to disk as temporary file
-	fileWritten := writeLambdaPayload(taskJSON)
-
-	// cleanup task file when finished
-	//defer os.Remove(fileWritten)
-
-	// invoke an AWS CLI command, passing the task file
-	// as a payload to set task lambda
-	outFile := os.TempDir() + "output.json"
-	cmd := fmt.Sprintf("aws lambda --profile %v invoke --function-name nimbusC2Handler --invocation-type RequestResponse --payload file://%v --cli-binary-format raw-in-base64-out %v", awsProfileHandler.GetAWSProfile(), fileWritten, outFile)
-	log.Debug(cmd)
-	err := shellexec.ExecShellCmd(cmd)
-	if err != nil {
-		return err
-	}
-	log.Info("Received task with following settings:")
-	printLambdaResponse(outFile)
-	return nil
-
-}
-
-func RemoveLambdaTaskWithID(taskObj *TaskObject) error {
-	log.Info("Successfully deleted task: ")
-	return nil
-}
-
-func RemoveLambdaTaskWithGroup(taskObj *TaskObject) error {
-	return nil
-}
-func RemoveLambdaTaskAll(taskObj *TaskObject) error {
-	return nil
+	return outFile, err
 }
 
 //-----------------------------------
@@ -262,7 +148,7 @@ func (taskObj *TaskObject) GetExecTime() string {
 	return taskObj.ExecTime
 }
 
-func (taskObj *TaskObject) SetImplantTask(task string) {
+func (taskObj *TaskObject) SetAgentTask(task string) {
 	taskObj.Task = task
 }
 
@@ -325,9 +211,11 @@ func convertToJSON(task *TaskObject) []byte {
 	return taskJSON
 }
 
-// printLambdaResponse displays/decodes
+// PrintLambdaResponse displays/decodes
 // the Lambda function response
-func printLambdaResponse(filename string) {
+func PrintLambdaResponse(filename string) {
+
+	log.Debug("reading Lambda response file: ", filename)
 
 	// read the file containing Lambda output
 	rawOutput, err := ioutil.ReadFile(filename)

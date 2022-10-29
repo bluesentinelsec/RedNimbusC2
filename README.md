@@ -43,7 +43,7 @@ Instructions on creating an AWS account are provided [here](https://aws.amazon.c
 You must install the following resources in order to build and operate Red Nimbus C2:
 
 1. [Node.js](https://nodejs.org/en/)
-2. [Python](https://www.python.org)
+2. [Python 3](https://www.python.org)
 3. [Go](https://go.dev)
 4. [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 5. [AWS CDK](https://aws.amazon.com/getting-started/guides/setup-cdk/)
@@ -60,50 +60,37 @@ After installing the needed build depdencies, you can install/deploy Red Nimbus 
 git clone https://github.com/bluesentinelsec/RedNimbusC2.git
 ```
 
-2. **Build Red Nimbus C2 binaries and deploy infrastructure to AWS using [CDK](https://aws.amazon.com/cdk/)**
+2. **Deploy Red Nimbus C2 infrastructure to AWS using [CDK](https://aws.amazon.com/cdk/)**
 
 ```bash
 # enter the RedNimbusC2 directory
 cd RedNimbusC2
 
-make
-```
+# deploy RedNimbusC2 resources to AWS
+make deploy
 
-*Note: you can optionally deploy to a specific AWS account like so:*
-
-```
-make <your_aws_profile>
+# optionally deploy to a specific AWS account like so:
+# make deploy AWS_PROFILE=<your_profile>
 ```
 
 See [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for info on configuring AWS CLI profiles.
 
-3. **Install the local Red Nimbus C2 binaries**
-
-```bash
-sudo make install
-```
-
-4. **Confirm Red Nimbus C2 binaries are availble:**
-
-```
-nimbusc2 --help
-
-nimbusc2-create-agent --help
-```
-
-:warning: *If the nimbusc2 binaries are not found, try terminating and restarting your terminal. Alternitively, execute the binaries using an absolute path:*
-
-```bash
-/usr/local/bin/nimbusc2 -h
-```
-
-:exclamation: To uninstall, execute:
+:exclamation: To remove the Red Nimbus C2 infrastructure on AWS:
 
 ```bash
 # remove nimbusc2 binaries and AWS infrastructure
 # this will destroy any operational data you may have
 # in S3, so be sure to backup your data before uninstalling if necessary 
-sudo make uninstall
+make destroy
+```
+
+3. **Install the Red Nimbus C2 Operator Client**
+
+```bash
+# from RedNimbusC2 directory
+pip3 install -r nimbusc2_client/requirements.txt
+
+python3 nimbusc2_client/nimbusc2.py --help
 ```
 
 ## Operator Instructions
@@ -143,20 +130,30 @@ You are responsible for deploying the Nimbus C2 agent to your intended target.
 
 As a reminder, always stay in scope, always follow your rules of engagement, and always get explicit written permission to execute prior to conducting your engagement.
 
-### Issue Commands
+### Interact with Agent Sessions
 
 ```bash
-# issue singular tasking
-./nimbusc2 set-task --session-id uuid --cmd supportedCmd --args yourArguments
+# view summarized info about all sessions
+nimbusc2.py --list-sessions
 
-# task multiple sessions
-./nimbusc2 set-task --session-id uuid1,uuid2,uuid3 --cmd supportedCmd --args yourArguments
+# view detailed agent session information
+nimbusc2.py --get-session --session-id <agent_session_id>
 
-# task every session
-./nimbusc2 set-task --session-id all --cmd supportedCmd --args yourArguments
+# terminate agent session
+nimbusc2.py --remove-session --session-id <agent_session_id>
+```
 
-# task implants in a group
-./nimbusc2 set-task --session-group yourGroup --cmd supportedCmd --args yourArguments
+### Issue Commands to Agents
+
+```bash
+# issue an agent task; will be executed by all agents by default
+nimbusc2.py --set-task --cmd <supported_agent_command>
+
+# view a pending agent task
+nimbusc2.py --get-task --task-id <task_id>
+
+# delete a pending agent task
+nimbusc2.py --remove-task --task-id <task_id>
 ```
 
 ### View Task Output

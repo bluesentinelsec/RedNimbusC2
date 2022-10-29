@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func HandleRequest(ctx context.Context, taskObj tasker.TaskObject) (lambdac2.LambdaReturnObject, error) {
+func HandleRequest(ctx context.Context, taskObj tasker.TaskObject) (any, error) {
 
 	log.SetLevel(log.DebugLevel)
 	log.Info("received nimbusC2 request")

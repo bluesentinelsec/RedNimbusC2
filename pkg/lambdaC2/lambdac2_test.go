@@ -8,32 +8,58 @@ import (
 
 var taskIDforTesting string = "827f9655-1815-41ac-89b5-0941ce32024c"
 
+func createTestTask() (*tasker.TaskObject, error) {
+	// create a new task object
+	task := tasker.NewTask()
+
+	// hard code task ID for testing
+	task.TaskID = taskIDforTesting
+
+	// give command to agent
+	task.SetAgentTask("get-pid")
+
+	// pass to task Handler
+	_, err := HandleSetLambdaTask(task)
+	if err != nil {
+		return nil, err
+	}
+
+	return task, err
+}
+
 func TestHandleSetLambdaTask(t *testing.T) {
 
-	task := tasker.NewTask()
-	task.TaskID = taskIDforTesting
-	task.SetImplantTask("get-pid")
-	_, err := HandleSetLambdaTask(task)
+	_, err := createTestTask()
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestHandleGetLambdaTask(t *testing.T) {
-	task := tasker.NewTask()
-	task.TaskID = taskIDforTesting
-	taskData, err := HandleGetLambdaTask(task)
+
+	// create test task
+	task, err := createTestTask()
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(taskData)
+
+	// confirm we can get the task we just created
+	_, err = HandleGetLambdaTask(task)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestHandleRemoveLambdaTask(t *testing.T) {
 
-	task := tasker.NewTask()
-	task.TaskID = taskIDforTesting
-	_, err := HandleRemoveLambdaTask(task)
+	// create test task
+	task, err := createTestTask()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// remove the task
+	_, err = HandleRemoveLambdaTask(task)
 	if err != nil {
 		t.Fatal(err)
 	}
