@@ -32,3 +32,6 @@ release/*
 # build files
 bootstrap.zip
 bootstrap
+
+# cdk artifacts
+cdk.context.json
