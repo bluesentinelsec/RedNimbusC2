@@ -131,10 +131,24 @@ class NimbusAgent:
     def check_kill_date(self):
         logging.warn("sorry, this function is not implemented")
 
+# -=-=-=-=-=-=-=-=-=-=-=-=-=
+#   Task Commands
+# -=-=-=-=-=-=-=-=-=-=-=-=-=
 
-#-=-=-=-=-=-=-=-=-=-=-=-=-=
+    def get_tasking(self):
+        logging.warn("sorry, this function is not implemented")
+        return True
+
+    def post_tasking_output(self):
+        logging.warn("sorry, this function is not implemented")
+
+    def exec_tasking(self, task, arguments):
+        logging.warn("sorry, this function is not implemented")
+
+
+# -=-=-=-=-=-=-=-=-=-=-=-=-=
 #   Agent Commands
-#-=-=-=-=-=-=-=-=-=-=-=-=-=
+# -=-=-=-=-=-=-=-=-=-=-=-=-=
 
 def download_file(url, dst):
     return "sorry this feature is not implemented"
@@ -156,23 +170,11 @@ def list_files_recursive(dir):
     return "sorry this feature is not implemented"
 
 
-def get_process():
-    return "sorry this feature is not implemented"
-
-
-def get_netstat():
-    return "sorry this feature is not implemented"
-
-
-def get_ifconfig():
-    return "sorry this feature is not implemented"
-
-
 def exec_library(library, function, args):
     return "sorry this feature is not implemented"
 
 
-def load_shellcode(shellcode):
+def exec_shellcode(shellcode):
     return "sorry this feature is not implemented"
 
 
@@ -217,7 +219,7 @@ def main(args):
 
         # check if tasking
         logging.debug("getting task from Red Nimbus C2")
-        task = True
+        task = agent.get_tasking()
 
         if not task:
             logging.debug("did not receive a task, restarting C2 loop")
@@ -245,7 +247,8 @@ if __name__ == "__main__":
     # define agent-related arguments
     parser.add_argument("-u", "--url", required=False, default="")
     parser.add_argument("-a", "--api-key", required=False, default="")
-    parser.add_argument("-s", "--sleep-interval", required=False, default="1.0")
+    parser.add_argument("-s", "--sleep-interval",
+                        required=False, default="1.0")
     parser.add_argument("-k", "--kill-date", required=False, default="0")
 
     # define general arguments
