@@ -14,16 +14,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// LambdaReturnObject is a generic object
-// used for returning information from the
-// Lambda function back to the operator
-// or implant
-type LambdaReturnObject struct {
-	ReturnType string `json:"returnType"`
-	Length     int    `json:"length"`
-	Value      []byte `json:"value"`
-}
-
 var tasksKey string = "tasks/"
 var tmp string = "/tmp/"
 
