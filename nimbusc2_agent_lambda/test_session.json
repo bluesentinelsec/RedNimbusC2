@@ -1,0 +1,17 @@
+{
+    "hostname": "test-hostname",
+    "os_name": "testOS",
+    "os_ver": "1.2.3",
+    "kernel_ver": "Linux Kernel Version 1.2.3",
+    "system_time": "Thu Nov  3 20:07:57 2022",
+    "agent_pid": 27073,
+    "agent_parent_pid": 22953,
+    "proc_name": "./agent.py",
+    "agent_dir": "/tmp/agent",
+    "working_dir": "/tmp/agent",
+    "username": "agent_test",
+    "internal_ip": "192.168.1.10",
+    "external_ip": "1.1.1.1",
+    "sleep_interval": "1.0",
+    "kill_date": "0"
+}
