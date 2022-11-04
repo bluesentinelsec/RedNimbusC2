@@ -35,3 +35,5 @@ bootstrap
 
 # cdk artifacts
 cdk.context.json
+
+__pycache__

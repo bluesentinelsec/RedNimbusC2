@@ -1,7 +1,8 @@
 import hashlib
 import json
 import logging
-#import boto3
+
+import s3wrapper
 
 
 def handler(event, context):
@@ -120,3 +121,4 @@ def derive_session_id(hostname: str, user: str, cwd: str, agent_pid) -> str:
     seed = hostname + user + cwd + str(agent_pid)
     session_id = hashlib.md5(seed.encode('utf-8')).hexdigest()
     return session_id
+
