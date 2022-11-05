@@ -1,0 +1,13 @@
+{
+    "taskID": "2076a35b-fc41-4f3d-976c-a6d9bcf858cf",
+    "sessionID": "test-session-123",
+    "lambdaHandler": "HandleSetLambdaTask",
+    "groupName": "",
+    "execTime": "",
+    "task": "test-task",
+    "arguments": [
+        "arg1",
+        "arg2",
+        "arg3"
+    ]
+}

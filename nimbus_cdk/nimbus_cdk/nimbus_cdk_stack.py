@@ -22,12 +22,12 @@ class NimbusCdkStack(Stack):
                                            handler="bootstrap",
                                            architecture=lambda_.Architecture.ARM_64,
                                            runtime=lambda_.Runtime.PROVIDED_AL2,
-                                           function_name="nimbusC2Handler"
+                                           function_name="nimbusC2Handler",
+                                           timeout=cdk.Duration.seconds(300)
                                            )
 
-        
         # define Lambda function that handles agent requests
-        
+
         agentHandler = lambda_.Function(self,
                                         "nimbusC2-agent-handler",
                                         code=lambda_.Code.from_asset(
@@ -35,9 +35,9 @@ class NimbusCdkStack(Stack):
                                         handler="nimbusc2_agent_lambda.handler",
                                         architecture=lambda_.Architecture.ARM_64,
                                         runtime=lambda_.Runtime.PYTHON_3_9,
-                                        function_name="nimbusC2-agent-handler"
+                                        function_name="nimbusC2-agent-handler",
+                                        timeout=cdk.Duration.seconds(300)
                                         )
-        
 
         # define API gateway
         # this routes agent task requests
@@ -49,18 +49,16 @@ class NimbusCdkStack(Stack):
         # after deployment
         cdk.CfnOutput(self, "NimbusC2-Agent-URL",
                       value=nimbusc2_agent_api.url)
-        
 
         # define S3 bucket used for storing operator data
         operator_bucket_name = f"red-nimbus-c2-{cdk.Aws.REGION}-{cdk.Aws.ACCOUNT_ID}"
         operator_bucket = s3_.Bucket(self, "red-nimbus-c2",
-                                      access_control=s3_.BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
-                                      block_public_access=s3_.BlockPublicAccess.BLOCK_ALL,
-                                      encryption=s3_.BucketEncryption.S3_MANAGED,
-                                      removal_policy=cdk.RemovalPolicy.DESTROY,
-                                      auto_delete_objects=True,
-                                      bucket_name=operator_bucket_name)
-        operator_bucket.grant_read_write(operatorHandler)
+                                     access_control=s3_.BucketAccessControl.BUCKET_OWNER_FULL_CONTROL,
+                                     block_public_access=s3_.BlockPublicAccess.BLOCK_ALL,
+                                     encryption=s3_.BucketEncryption.S3_MANAGED,
+                                     removal_policy=cdk.RemovalPolicy.DESTROY,
+                                     auto_delete_objects=True,
+                                     bucket_name=operator_bucket_name)
 
         # define bucket for unit tests
         test_bucket_name = f"red-nimbus-c2-testing-{cdk.Aws.REGION}-{cdk.Aws.ACCOUNT_ID}"
@@ -71,4 +69,11 @@ class NimbusCdkStack(Stack):
                                  removal_policy=cdk.RemovalPolicy.DESTROY,
                                  auto_delete_objects=True,
                                  bucket_name=test_bucket_name)
+
+        # set bucket permissions
+        # ToDo - try to reduce permissions for more opsec
+        operator_bucket.grant_read_write(operatorHandler)
         test_bucket.grant_read_write(operatorHandler)
+
+        operator_bucket.grant_read_write(agentHandler)
+        test_bucket.grant_read_write(agentHandler)

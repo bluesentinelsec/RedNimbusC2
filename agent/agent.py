@@ -178,6 +178,17 @@ def extract_task_and_arguments(task):
         logging.warning("sorry, this function is not implemented")
         return "", [""]
 
+def derive_session_id(hostname: str, user: str, cwd: str, agent_pid) -> str:
+    """
+    generate a unique session ID
+    based on hostname, curent user,
+    and current working directory
+    """
+    seed = hostname + user + cwd + str(agent_pid)
+    session_id = hashlib.md5(seed.encode('utf-8')).hexdigest()
+    return session_id
+
+
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
 #   Agent Commands
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -246,6 +257,8 @@ def main(args):
     agent_settings = json.dumps(vars(agent), indent=4)
     logging.info("agent settings:")
     print(agent_settings)
+    session_id = derive_session_id(agent.hostname, agent.username, agent.agent_dir, agent.agent_pid)
+    print(f"session ID: {session_id}")
 
     while True:
         # check kill date

