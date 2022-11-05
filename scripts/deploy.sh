@@ -19,4 +19,6 @@ cdk bootstrap
 cdk synth
 
 # Deploy Red Nimbus C2 to AWS
-cdk deploy --all --require-approval never $1
+cdk deploy --all --require-approval never --outputs-file ../nimbus_c2_url.json $1
+
+cat ../nimbus_c2_url.json

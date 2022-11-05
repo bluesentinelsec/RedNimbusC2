@@ -44,11 +44,12 @@ You must install the following resources in order to build and operate Red Nimbu
 
 1. [Node.js](https://nodejs.org/en/)
 2. [Python 3](https://www.python.org)
-3. [Go](https://go.dev)
-4. [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-5. [AWS CDK](https://aws.amazon.com/getting-started/guides/setup-cdk/)
-6. [Make](https://www.gnu.org/software/make/)
-7. [Git](https://git-scm.com)
+3. [AWS SDK for Python (Boto3)](https://aws.amazon.com/sdk-for-python/)
+4. [Go](https://go.dev)
+5. [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+6. [AWS CDK](https://aws.amazon.com/getting-started/guides/setup-cdk/)
+7. [Make](https://www.gnu.org/software/make/)
+8. [Git](https://git-scm.com)
 
 ## :computer: Installation
 

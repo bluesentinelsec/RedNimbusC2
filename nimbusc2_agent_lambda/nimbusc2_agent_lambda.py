@@ -84,11 +84,17 @@ def handle_get_task(event_body):
 
 
 def handle_post_task_output(event_body):
-    logging.info("stub - handle_post_task_output")
+
+    logging.info(f"received task output from agent:")
+
+    # pretty print event_body
+    print(json.dumps(event_body, indent=4))
+    logging.info("task output:")
+    print(event_body["task_output"])
     return {
         'statusCode': 200,
         'headers': {
             'Content-Type': 'text/plain'
         },
-        'body': 'stub - handle_post_task_output'
+        'body': ''
     }

