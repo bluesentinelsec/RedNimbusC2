@@ -14,6 +14,10 @@ def test_register_agent():
 
     agent_session.register_agent(test_session_id, event_data)
 
+def test_list_sessions():
+    ret = agent_session.list_sessions()
+    assert(ret != "")
+    assert(ret != None)
 
 def test_is_agent_registered():
     session_exists = agent_session.is_agent_registered(test_session_id)

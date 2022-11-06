@@ -123,10 +123,24 @@ def invoke_get_session(args):
 
 def invoke_list_sessions(args):
     logging.info("creating list-sessions request")
-    request = new_request(args)
-    request["lambdaHandler"] = "HandleListSessions"
-    out = invoke_nimbusc2_lambda(request)
-    print(out)
+    request = {"nimbusc2-operator": "list-sessions"}
+    request_json = json.dumps(request, indent=4)
+    print(request_json)
+
+    lambda_client = boto3.client('lambda')
+
+    logging.info("sending request to AWS Lambda")
+    response = lambda_client.invoke(FunctionName='nimbusC2-agent-handler',
+                                    InvocationType='RequestResponse',
+                                    Payload=request_json)
+
+    logging.info("nimbusC2 response:")
+    console_output = json.loads(response['Payload'].read())
+    encoded_sessions = console_output["body"]
+    sessions = base64.b64decode(encoded_sessions)
+    console_output = json.loads(sessions)
+    console_output = json.dumps(console_output, indent=4, sort_keys=True)
+    print(console_output)
 
 
 def invoke_remove_session(args):

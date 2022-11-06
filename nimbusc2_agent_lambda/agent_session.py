@@ -12,6 +12,7 @@ import logging
 
 import s3wrapper
 
+from os.path import normpath, basename
 
 def register_agent(session_id, event_body):
     """
@@ -49,6 +50,23 @@ def remove_agent(session_id):
 
     return
 
+def list_sessions():
+    session_info = []
+    
+    # get S3 bucket name
+    bucket_name = s3wrapper.get_s3_bucket_name()
+
+    session_files = s3wrapper.list_s3_files(bucket_name, "sessions")
+
+    for session_file in session_files:
+        dst_file = f"/tmp/{basename(normpath(session_file))}"
+        s3wrapper.get_s3_file(bucket_name, session_file, dst_file)
+
+        with open(dst_file, "r") as fp:
+            session_data = json.load(fp)
+            session_info.append(session_data)
+
+    return session_info
 
 def is_agent_registered(session_id):
     """
