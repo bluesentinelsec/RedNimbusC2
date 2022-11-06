@@ -6,6 +6,10 @@ The purpose of this tool is to enable legitimate cybersecurity practitioners to 
 
 ![alt text](images/nimbusC2_architecture.png)
 
+## Demo
+
+![](images/RedNimbusC2-Demo.gif)
+
 ## :warning: READ THIS FIRST! :warning:
 
 - You are solely responsible for your use of this tool.
@@ -24,9 +28,7 @@ The purpose of this tool is to enable legitimate cybersecurity practitioners to 
 
 This repository is under active development.
 
-Content is not expected to be stable or even usable at this time.
-
-`[!] Do not use this tool until this notice is removed.`
+Content is not stable at this time.
 
 ## :floppy_disk: Prerequisites
 

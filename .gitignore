@@ -37,3 +37,5 @@ bootstrap
 cdk.context.json
 
 __pycache__
+
+nimbus_c2_url.json
