@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 # Deploys Red Nimbus C2 to AWS
 
