@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 # Deletes all Red Nimbus C2 components and data from AWS
 
