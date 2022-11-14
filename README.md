@@ -149,27 +149,15 @@ The Red Nimbus C2 operator client is provided [here](./operator_client/nimbusc2.
 **Interact with Agent Sessions**
 
 ```bash
-# view summarized info about all sessions
+# view info about all sessions
 nimbusc2.py --list-sessions
-
-# view detailed agent session information
-nimbusc2.py --get-session --session-id <agent_session_id>
-
-# terminate agent session
-nimbusc2.py --remove-session --session-id <agent_session_id>
 ```
 
 **Issue Commands to Agents**
 
 ```bash
 # issue an agent task; will be executed by all agents by default
-nimbusc2.py --set-task --cmd <supported_agent_command>
-
-# view a pending agent task
-nimbusc2.py --get-task --task-id <task_id>
-
-# delete a pending agent task
-nimbusc2.py --remove-task --task-id <task_id>
+nimbusc2.py --set-task --cmd "exec-cmd" --args "whoami /priv"
 ```
 
 ### View Task Output
