@@ -91,7 +91,7 @@ cd RedNimbusC2
 make deploy
 ```
 
-Your C2 URL will be found in this file after deployingment:
+Your C2 URL will be found in this file after deployment:
 
 ```
 RedNimbusC2/nimbus_c2_url.json
