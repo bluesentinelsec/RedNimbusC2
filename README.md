@@ -53,6 +53,24 @@ You must install the following resources in order to build and operate Red Nimbu
 7. [Make](https://www.gnu.org/software/make/)
 8. [Git](https://git-scm.com)
 
+You can optionally use the provided Dockerfile to build a pre-configured docker container:
+
+```bash
+# build the RedNimbusC2 docker image
+docker build -t red-nimbus-c2 .
+
+# execute the red-nimbus-c2 container
+docker run -it red-nimbus-c2 bash
+```
+
+Next, configure AWS CLI with your AWS access key ID and secret access key.
+
+See [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html) for guidance on setting up AWS CLI.
+
+```bash
+aws configure
+```
+
 ## :computer: Installation
 
 After installing the needed build depdencies, you can install/deploy Red Nimbus C2 using the following commands.
