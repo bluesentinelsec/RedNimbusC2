@@ -89,17 +89,19 @@ cd RedNimbusC2
 
 # deploy RedNimbusC2 resources to AWS
 make deploy
-
-# Your C2 URL will be found in this file
-# after deployingment:
-#     RedNimbusC2/nimbus_c2_url.json
-
-# optionally deploy to a specific AWS account like so:
-#     make deploy AWS_PROFILE=<your_profile>
 ```
 
-See [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for info on configuring AWS CLI profiles.
+Your C2 URL will be found in this file after deployingment:
 
+```
+RedNimbusC2/nimbus_c2_url.json
+```
+
+Optionally deploy to a specific AWS account like so; see [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for info on configuring AWS CLI profiles.
+
+```
+make deploy AWS_PROFILE=<your_profile>
+```
 
 3. **Install the Red Nimbus C2 Operator Client**
 
