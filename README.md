@@ -4,6 +4,8 @@ Red Nimbus C2 is a [command and control](https://attack.mitre.org/tactics/TA0011
 
 The purpose of this tool is to enable legitimate cybersecurity practitioners to emulate advanced cyber threats. In that way, organizations can identify weaknesses and apply corrective and/or compensating controls to improve their security posture.
 
+Check out the [Pen Test HackFest presentation](docs/Serverless-C2-Michael-Long-PenTestHackFest2022.pdf) to learn more.
+
 ![alt text](images/nimbusC2_architecture.png)
 
 ## Demo
