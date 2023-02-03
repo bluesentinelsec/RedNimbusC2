@@ -58,3 +58,29 @@ def get_task(session_id):
 
     # return the task for the intended session
     return pending_task
+
+def post_task(event_body):
+    """
+    store the task output in the S3 task folder
+    so c2 will be able to retrieve it based on the task_id
+    """
+    task_id = event_body["task"]["taskID"]
+    logging.info(f"storing the output of task: {task_id}")
+
+    # get the files to be used
+    tmp_task_file = f"/tmp/{task_id}"
+    s3_task_file = f"outputs/{task_id}"
+
+    # write event_body in json format to /tmp/
+    event_body_str = json.dumps(event_body)
+    with open(tmp_task_file, "w") as fp:
+        fp.write(event_body_str)
+
+    # get S3 bucket name
+    bucket_name = s3wrapper.get_s3_bucket_name()
+
+    # upload task file to S3
+    logging.info(f"uploading task output event body to S3...")
+    s3wrapper.put_s3_file(bucket_name, tmp_task_file, s3_task_file)
+
+    return

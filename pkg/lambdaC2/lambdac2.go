@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var outputsKey string = "outputs/"
 var tasksKey string = "tasks/"
 var tmp string = "/tmp/"
 
@@ -111,7 +112,7 @@ func HandleGetLambdaTask(taskObj *tasker.TaskObject) (any, error) {
 
 	log.Info("getting task: ", taskObj.TaskID)
 
-	key := tasksKey + taskObj.TaskID
+	key := outputsKey + taskObj.TaskID
 	log.Debug("set S3 key: ", key)
 
 	outFile := tmp + taskObj.TaskID

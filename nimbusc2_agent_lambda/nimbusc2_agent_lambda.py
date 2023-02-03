@@ -92,10 +92,11 @@ def handle_get_task(event_body):
 
 def handle_post_task_output(event_body):
 
-    logging.info(f"received task output from agent:")
-
     # pretty print event_body
     print(json.dumps(event_body, indent=4))
+    logging.info(f"received task output from agent:")
+    agent_tasks.post_task(event_body)
+
     logging.info("task output:")
     print(event_body["task_output"])
     return {
